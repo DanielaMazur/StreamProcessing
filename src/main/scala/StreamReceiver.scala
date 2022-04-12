@@ -9,15 +9,33 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.http.scaladsl.client.RequestBuilding.Get
+import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, Uri}
+import akka.stream.alpakka.sse.scaladsl.EventSource
+import akka.stream.ThrottleMode
+import akka.stream.scaladsl.Sink
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import collection.immutable
+import scala.concurrent.Await
 
 object StreamReceiver extends App {
     implicit val system = ActorSystem()
-    implicit val mat    = ActorMaterializer()
-
+ 
     import system.dispatcher
 
-    Http()
-      .singleRequest(Get("http://localhost:4000/tweets/1"))
-      .flatMap(Unmarshal(_).to[Source[ServerSentEvent, NotUsed]])
-      .foreach(_.runForeach(println))
+    val send: HttpRequest => Future[HttpResponse] = Http().singleRequest(_)
+
+    val eventSource: Source[ServerSentEvent, NotUsed] =
+      EventSource(
+        uri = Uri("http://localhost:4000/tweets/1"),
+        send
+      )
+
+    val events: Future[immutable.Seq[ServerSentEvent]] =
+      eventSource
+        .throttle(elements = 1, per = 500.milliseconds, maximumBurst = 1, ThrottleMode.Shaping)
+        .take(20)
+        .runWith(Sink.seq)
+
+    Await.result(events, Duration.Inf).map(e => println(e.getData()))
 }
