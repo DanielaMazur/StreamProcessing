@@ -1,13 +1,15 @@
 package streamprocessing
 
 import streamprocessing.Worker
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorSystem, Props, Actor}
 import akka.routing.RoundRobinPool
+import akka.http.scaladsl.model.sse.ServerSentEvent
 
-object WorkersPool extends App {
-  val actorSystem = ActorSystem("Akka-RoundRobin")
-  val router = actorSystem.actorOf(RoundRobinPool(2).props(Props[Worker]))
-  for (i <- 1 to 4) {
-    router ! s"Hello $i"
+class WorkersPool extends Actor {
+  val router = context.actorOf(RoundRobinPool(2).props(Props[Worker]))
+  
+  override def receive = {
+    case event: ServerSentEvent => println(event.getData())
+    case _ => println("Unknown message ")
   }
 }

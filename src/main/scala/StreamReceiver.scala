@@ -1,7 +1,7 @@
 package streamprocessing
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
@@ -20,6 +20,8 @@ import scala.concurrent.Await
 
 object StreamReceiver extends App {
     implicit val system = ActorSystem()
+
+    val workersPool = system.actorOf(Props[WorkersPool], name = "WorkersPool")
  
     import system.dispatcher
 
@@ -28,14 +30,20 @@ object StreamReceiver extends App {
     val eventSource: Source[ServerSentEvent, NotUsed] =
       EventSource(
         uri = Uri("http://localhost:4000/tweets/1"),
-        send
+        send,
+        initialLastEventId = Some("2"),
+        retryDelay = 1.second
       )
 
-    val events: Future[immutable.Seq[ServerSentEvent]] =
-      eventSource
-        .throttle(elements = 1, per = 500.milliseconds, maximumBurst = 1, ThrottleMode.Shaping)
-        .take(20)
-        .runWith(Sink.seq)
-
-    Await.result(events, Duration.Inf).map(e => println(e.getData()))
+    while(true) {
+      val events : Future[immutable.Seq[ServerSentEvent]] =
+        eventSource
+          .take(1)
+          .runWith(Sink.seq)
+  
+      Await.result(events, Duration.Inf).map(e => workersPool!e)
+    }
 }
+
+//Start docker tweets:
+//docker run --p 4000:4000 alexburlacu/rtp-server:faf18x
