@@ -1,8 +1,10 @@
 package streamprocessing
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.Actor
+import akka.actor.ActorLogging
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import play.api.libs.json._
+
 import scala.util.Random
 
 class Worker extends Actor with ActorLogging {

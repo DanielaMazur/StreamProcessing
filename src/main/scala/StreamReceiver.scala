@@ -1,24 +1,26 @@
 package streamprocessing
 
-import akka.NotUsed
-import akka.actor.{ActorSystem, Props}
-import akka.http.scaladsl.Http
-import akka.stream.scaladsl.Source
-import akka.http.scaladsl.model.sse.ServerSentEvent
-import akka.http.scaladsl.client.RequestBuilding.Get
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
-import akka.stream.alpakka.sse.scaladsl.EventSource
-import scala.concurrent.Future
 import akka.Done
+import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding.Get
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.sse.ServerSentEvent
+import akka.stream.alpakka.sse.scaladsl.EventSource
+import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
+
+import scala.concurrent.Future
 
 object StreamReceiver extends App {
     implicit val system = ActorSystem("StreamProcessing", ConfigFactory.load().getConfig("StreamProcessingConfig"))
 
     val workersPool = system.actorOf(Props[WorkersPool], name = "WorkersPool")
  
-    import system.dispatcher
-
     val send: HttpRequest => Future[HttpResponse] = Http().singleRequest(_)
 
     val eventSource: Source[ServerSentEvent, NotUsed] =

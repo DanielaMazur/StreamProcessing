@@ -1,10 +1,12 @@
 package streamprocessing
 
-import streamprocessing.Worker
-import akka.actor.{ActorSystem, Props, Actor}
-import akka.routing.RoundRobinPool
+import akka.actor.Actor
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.routing.FromConfig
+import akka.routing.RoundRobinPool
+import streamprocessing.Worker
 
 class WorkersPool extends Actor {
   val router = context.actorOf(FromConfig.props(Props[Worker]).withDispatcher("worker-dispatcher"), "Router")
