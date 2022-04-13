@@ -4,12 +4,13 @@ import streamprocessing.Worker
 import akka.actor.{ActorSystem, Props, Actor}
 import akka.routing.RoundRobinPool
 import akka.http.scaladsl.model.sse.ServerSentEvent
+import akka.routing.FromConfig
 
 class WorkersPool extends Actor {
-  val router = context.actorOf(RoundRobinPool(2).props(Props[Worker]))
-  
+  val router = context.actorOf(FromConfig.props(Props[Worker]), "Router")
+
   override def receive = {
-    case event: ServerSentEvent => println(event.getData())
+    case event: ServerSentEvent => router ! event
     case _ => println("Unknown message ")
   }
 }

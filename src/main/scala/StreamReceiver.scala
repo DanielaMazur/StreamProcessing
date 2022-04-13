@@ -10,9 +10,10 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.stream.alpakka.sse.scaladsl.EventSource
 import scala.concurrent.Future
 import akka.Done
+import com.typesafe.config.ConfigFactory
 
 object StreamReceiver extends App {
-    implicit val system = ActorSystem()
+    implicit val system = ActorSystem("StreamProcessing", ConfigFactory.load().getConfig("StreamProcessingConfig"))
 
     val workersPool = system.actorOf(Props[WorkersPool], name = "WorkersPool")
  
@@ -29,7 +30,6 @@ object StreamReceiver extends App {
     val events : Future[Done] =
       eventSource
         .runForeach(e => workersPool!e)
-
  }
 
 //Start docker tweets:
