@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.routing.FromConfig
 
 class WorkersPool extends Actor {
-  val router = context.actorOf(FromConfig.props(Props[Worker]), "Router")
+  val router = context.actorOf(FromConfig.props(Props[Worker]).withDispatcher("worker-dispatcher"), "Router")
 
   override def receive = {
     case event: ServerSentEvent => router ! event

@@ -3,6 +3,7 @@ package streamprocessing
 import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import play.api.libs.json._
+import scala.util.Random
 
 class Worker extends Actor with ActorLogging {
 
@@ -19,6 +20,7 @@ class Worker extends Actor with ActorLogging {
       try {
         val JSONEvent = Json.parse(event.getData());
         log.info((JSONEvent \ "message" \ "tweet" \ "text").as[String])
+        Thread.sleep(Random.between(50, 500))
       }catch{
         case _: Throwable => {
           log.error("Worker received a 'panic' message");
