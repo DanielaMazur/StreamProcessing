@@ -11,6 +11,7 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.stream.alpakka.sse.scaladsl.EventSource
+import akka.stream.scaladsl.Merge
 import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 
@@ -19,19 +20,22 @@ import scala.concurrent.Future
 object StreamReceiver extends App {
     implicit val system = ActorSystem("StreamProcessing", ConfigFactory.load().getConfig("StreamProcessingConfig"))
 
-    val workersPool = system.actorOf(Props[WorkersPool], name = "WorkersPool")
+    val tweetsParser = system.actorOf(Props[TweetParser], "TweetParser")
  
     val send: HttpRequest => Future[HttpResponse] = Http().singleRequest(_)
 
-    val eventSource: Source[ServerSentEvent, NotUsed] =
+    val tweetsSource1: Source[ServerSentEvent, NotUsed] =
       EventSource(
         uri = Uri("http://localhost:4000/tweets/1"),
         send
       )
+    val tweetsSource2: Source[ServerSentEvent, NotUsed] = 
+      EventSource(
+        uri = Uri("http://localhost:4000/tweets/2"),
+        send
+      )
 
-    val events : Future[Done] =
-      eventSource
-        .runForeach(e => workersPool!e)
+      Source.combine(tweetsSource1, tweetsSource2)(Merge(_)).runForeach(e => tweetsParser!e)
  }
 
 //Start docker tweets:

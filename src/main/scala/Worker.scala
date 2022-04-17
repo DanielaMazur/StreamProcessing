@@ -18,18 +18,18 @@ class Worker extends Actor with ActorLogging {
   }
 
   override def receive = {
-    case event: ServerSentEvent => {
+    case event: JsValue => {
       try {
-        val JSONEvent = Json.parse(event.getData());
-        log.info((JSONEvent \ "message" \ "tweet" \ "text").as[String])
+        log.info((event \ "message" \ "tweet" \ "text").as[String])
         Thread.sleep(Random.between(50, 500))
       }catch{
-        case _: Throwable => {
-          log.error("Worker received a 'panic' message");
-          context.stop(self)
-        }
+        case _: Throwable => ???
       }
     }
-    case _ => log.info("Unknown message ")
+    case _: IPanicMessage => {
+      log.error("Worker received a 'panic' message");
+      context.stop(self)
+    }
+    case _ => log.info("Worker Unknown message ")
   }
 }
