@@ -7,18 +7,19 @@ import akka.actor.Props
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.routing.FromConfig
 import akka.routing.RoundRobinPool
-import streamprocessing.Worker
 import play.api.libs.json.JsValue
 import akka.actor.SupervisorStrategy
 import akka.actor.OneForOneStrategy
 import scala.concurrent.duration._
+import scala.reflect.ClassTag
 
-class WorkersPool extends Actor with ActorLogging {
+class WorkersPool[T <: Worker: ClassTag] extends Actor with ActorLogging {
   var supervisorStrategyRestart = OneForOneStrategy() {
     case _ => SupervisorStrategy.Restart
   }
 
-  val router = context.actorOf(RoundRobinPool(1, supervisorStrategy = supervisorStrategyRestart).props(routeeProps = Props[Worker].withDispatcher("worker-dispatcher")))
+  val router = context.actorOf(RoundRobinPool(1, supervisorStrategy = supervisorStrategyRestart)
+              .props(Props[T].withDispatcher("worker-dispatcher")))
 
   override def preStart() = {
     log.info("Starting a new worker pool")
