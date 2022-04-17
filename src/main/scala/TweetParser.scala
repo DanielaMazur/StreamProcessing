@@ -13,32 +13,34 @@ import com.typesafe.config.{Config, ConfigFactory}
 import scala.reflect.ClassTag
 import akka.routing.RoundRobinGroup
 import akka.actor.ActorRef
+import scala.util.parsing.json.JSON
 
 class TweetParser extends Actor with ActorLogging  {
-  val applicationConf: Config = ConfigFactory.load("application.conf")
-  val sentimentWorkersNumber = applicationConf.getString("StreamProcessingConfig.akka.actor.deployment./TweetParser.sentiment-workers")
-  val engagementWorkersNumber = applicationConf.getString("StreamProcessingConfig.akka.actor.deployment./TweetParser.engagement-workers")
-
-  val sentimentWorkers = createWorkers(sentimentWorkersNumber.toInt, () => context.actorOf(Props(new WorkersPool[SentimentWorker])))
-  val engagementWorkers = createWorkers(engagementWorkersNumber.toInt, () => context.actorOf(Props(new WorkersPool[EngagementWorker])))
-
-  val workers = sentimentWorkers ++: engagementWorkers
-
-  val router = context.actorOf(RoundRobinGroup(workers).props(), "RouterPool")
-
+  val sentimentWorkersRouter = context.actorOf(RoundRobinPool(1).props(Props(new WorkersPool[SentimentWorker])), "SentimentRouterPool")
+  val engagementWorkersRouter = context.actorOf(RoundRobinPool(1).props(Props(new WorkersPool[EngagementWorker])), "EngagementRouterPool")
+  
   override def receive: Receive = { 
     case event: ServerSentEvent => {
         try{
             val JSONEvent = Json.parse(event.getData());
-            router ! JSONEvent
+
+            sentimentWorkersRouter ! JSONEvent
+            engagementWorkersRouter ! JSONEvent
+
+            // Send the retweet to itself (recursion)
+            val retweet_status = (JSONEvent \ "message" \ "tweet" \ "retweet_status")
+            self ! retweet_status
         }
         catch {
-            case _: Throwable => router ! PanicMessage
+            case _: Throwable => {
+              sentimentWorkersRouter ! PanicMessage
+              engagementWorkersRouter ! PanicMessage
+            }
         }
     }
-  }
-
-  private def createWorkers(numberOfWorkers: Int, newActor: () => ActorRef): Array[String] = {
-    (1 to numberOfWorkers).toArray.map(_ => newActor().path.toString());
+    // convert the retweet to SSE and send it to itself (recursion)
+    case retweet: JsValue => self ! ServerSentEvent(retweet.toString())
+    // catch all other calls including JsUndefined when trying to get the retweet_status key (stop recursion)
+    case _ => {}
   }
 }
