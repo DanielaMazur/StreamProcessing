@@ -22,9 +22,9 @@ class SentimentWorker extends Worker {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   val futureResponse = Http(context.system).singleRequest(HttpRequest(
-    uri =  Uri("http://localhost:4000/emotion_values"),
- 
+    uri =  Uri("http://localhost:4000/emotion_values")
   ))
+
   val emotionValuesFuture = Await.ready(futureResponse, Duration.Inf).value.get
 
   val emotion_values_map: Map[String, Int] = emotionValuesFuture match {
@@ -41,7 +41,8 @@ class SentimentWorker extends Worker {
     case event: JsValue => {
       try {
         val text = (event \ "message" \ "tweet" \ "text").as[String]
-        val score = text.split("\\s+").map(word => emotion_values_map.getOrElse(word, 0)).sum
+        val words = text.split("\\s+")
+        val score = words.map(word => emotion_values_map.getOrElse(word, 0)).sum / words.length
         log.info("Sentiment Score " + score)
         Thread.sleep(Random.between(50, 500))
       }catch{
