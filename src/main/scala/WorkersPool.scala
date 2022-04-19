@@ -9,6 +9,7 @@ import akka.routing.RoundRobinPool
 import play.api.libs.json.JsValue
 
 import scala.reflect.ClassTag
+import akka.actor.ActorRef
 
 class WorkersPool[T <: Worker: ClassTag] extends Actor with ActorLogging {
   var supervisorStrategyRestart = OneForOneStrategy() {
@@ -23,8 +24,8 @@ class WorkersPool[T <: Worker: ClassTag] extends Actor with ActorLogging {
   }
 
   override def receive = {
-    case event: JsValue => router ! event
-    case panicMessage: PanicMessage => router ! panicMessage
+    case (event: JsValue, replyTo: ActorRef) => router ! (event, replyTo)
+    case panicMessage: IPanicMessage => router ! panicMessage
     case _ => println("WorkersPool Unknown message ")
   }
 }

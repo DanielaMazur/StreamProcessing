@@ -13,17 +13,18 @@ import scala.util.parsing.json.JSON
 class TweetParser extends Actor with ActorLogging  {
   val sentimentWorkersRouter = context.actorOf(RoundRobinPool(1).props(Props(new WorkersPool[SentimentWorker])), "SentimentRouterPool")
   val engagementWorkersRouter = context.actorOf(RoundRobinPool(1).props(Props(new WorkersPool[EngagementWorker])), "EngagementRouterPool")
-  
+  val aggregator = context.actorOf(Props[Aggregator], "TweetsAggregator")
+
   override def receive: Receive = { 
     case event: ServerSentEvent => {
         try{
             val JSONEvent = Json.parse(event.getData());
 
-            sentimentWorkersRouter ! JSONEvent
-            engagementWorkersRouter ! JSONEvent
+            sentimentWorkersRouter ! (JSONEvent, aggregator)
+            engagementWorkersRouter ! (JSONEvent, aggregator)
 
             // Send the retweet to itself (recursion)
-            val retweet_status = (JSONEvent \ "message" \ "tweet" \ "retweet_status")
+            val retweet_status = (JSONEvent \ "message" \ "tweet" \ "retweet_status").get
             self ! retweet_status
         }
         catch {
@@ -36,6 +37,6 @@ class TweetParser extends Actor with ActorLogging  {
     // convert the retweet to SSE and send it to itself (recursion)
     case retweet: JsValue => self ! ServerSentEvent(retweet.toString())
     // catch all other calls including JsUndefined when trying to get the retweet_status key (stop recursion)
-    case _ => {}
+    case _ => log.info("TweetParser Unknown message")
   }
 }

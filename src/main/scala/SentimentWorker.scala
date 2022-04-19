@@ -6,9 +6,10 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
+import play.api.libs.json.JsObject
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json
- 
+
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -16,6 +17,7 @@ import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Random
 import scala.util.Success
+  import akka.actor.ActorRef
   
 class SentimentWorker extends Worker {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -37,12 +39,12 @@ class SentimentWorker extends Worker {
   }
 
   override def receive = {
-    case event: JsValue => {
+    case (event: JsValue, replyTo: ActorRef) => {
       try {
         val text = (event \ "message" \ "tweet" \ "text").as[String]
         val words = text.split("\\s+")
         val score = words.map(word => emotion_values_map.getOrElse(word, 0)).sum / words.length
-        log.info("Sentiment Score " + score)
+        replyTo ! event.as[JsObject] + ("sentiment_score" -> Json.toJson(score))
         Thread.sleep(Random.between(50, 500))
       }catch{
         case _: Throwable => log.warning("SentimentWorker => Something went wrong")

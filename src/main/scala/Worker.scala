@@ -13,7 +13,7 @@ abstract class Worker extends Actor with ActorLogging {
   }
 
   override def receive = {
-    case _: PanicMessage => {
+    case _: IPanicMessage => {
       log.error(this + " received a 'panic' message");
       context.stop(self)
     }
