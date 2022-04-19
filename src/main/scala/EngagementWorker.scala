@@ -1,7 +1,6 @@
 package streamprocessing
 
 import play.api.libs.json.JsValue
-import streamprocessing.IPanicMessage
 
 import scala.util.Random
 

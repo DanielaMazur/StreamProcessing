@@ -1,5 +1,5 @@
 package streamprocessing
 
-trait IPanicMessage {}
+trait PanicMessage {}
 
-object PanicMessage extends IPanicMessage {}
+object PanicMessage {}

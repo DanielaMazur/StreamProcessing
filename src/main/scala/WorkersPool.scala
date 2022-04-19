@@ -24,7 +24,7 @@ class WorkersPool[T <: Worker: ClassTag] extends Actor with ActorLogging {
 
   override def receive = {
     case event: JsValue => router ! event
-    case panicMessage: IPanicMessage => router ! panicMessage
+    case panicMessage: PanicMessage => router ! panicMessage
     case _ => println("WorkersPool Unknown message ")
   }
 }
