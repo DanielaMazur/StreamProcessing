@@ -1,11 +1,9 @@
 package streamprocessing
 
-import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.Uri
@@ -35,7 +33,7 @@ object StreamReceiver extends App {
         send
       )
 
-      Source.combine(tweetsSource1, tweetsSource2)(Merge(_)).runForeach(e => tweetsParser!e)
+    Source.combine(tweetsSource1, tweetsSource2)(Merge(_)).runForeach(e => tweetsParser!e)
  }
 
 //Start docker tweets:

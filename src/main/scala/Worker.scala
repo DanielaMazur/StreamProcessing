@@ -2,8 +2,6 @@ package streamprocessing
 
 import akka.actor.Actor
 import akka.actor.ActorLogging
-import play.api.libs.json.JsValue
-import scala.util.Random
 
 abstract class Worker extends Actor with ActorLogging {
   override def preStart() = {

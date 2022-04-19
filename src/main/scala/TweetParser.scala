@@ -2,17 +2,12 @@ package streamprocessing
 
 import akka.actor.Actor
 import akka.actor.ActorLogging
-import akka.http.scaladsl.model.sse.ServerSentEvent
-import akka.routing.FromConfig
-import streamprocessing.WorkersPool
 import akka.actor.Props
-import play.api.libs.json.Json
-import play.api.libs.json.JsValue
+import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.routing.RoundRobinPool
-import com.typesafe.config.{Config, ConfigFactory}
-import scala.reflect.ClassTag
-import akka.routing.RoundRobinGroup
-import akka.actor.ActorRef
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+
 import scala.util.parsing.json.JSON
 
 class TweetParser extends Actor with ActorLogging  {

@@ -2,15 +2,12 @@ package streamprocessing
 
 import akka.actor.Actor
 import akka.actor.ActorLogging
-import akka.actor.ActorSystem
+import akka.actor.OneForOneStrategy
 import akka.actor.Props
-import akka.http.scaladsl.model.sse.ServerSentEvent
-import akka.routing.FromConfig
+import akka.actor.SupervisorStrategy
 import akka.routing.RoundRobinPool
 import play.api.libs.json.JsValue
-import akka.actor.SupervisorStrategy
-import akka.actor.OneForOneStrategy
-import scala.concurrent.duration._
+
 import scala.reflect.ClassTag
 
 class WorkersPool[T <: Worker: ClassTag] extends Actor with ActorLogging {
