@@ -3,3 +3,5 @@
 3. [Akka Routing, Dynamically Resizable Pool](https://doc.akka.io/docs/akka/current/routing.html#dynamically-resizable-pool)
 4. [Akka Supervision](https://www.oreilly.com/library/view/scala-reactive-programming/9781787288645/713acabe-831f-45e8-a3a5-67aced0e021f.xhtml)
 5. [Akka SupervisorStrategy](https://doc.akka.io/japi/akka/current/akka/actor/SupervisorStrategy.html)
+6. [Message Broker, Reliable Message Delivery](https://docs.oracle.com/cd/E18930_01/html/821-2443/aerbz.html)
+7. [A Message’s Journey Through the System](https://docs.oracle.com/cd/E18930_01/html/821-2443/aercd.html#gbpdi)
