@@ -31,7 +31,8 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http" % "10.2.9",
     "com.typesafe.akka" %% "akka-stream" % "2.6.19",
     "com.lightbend.akka" %% "akka-stream-alpakka-sse" % "3.0.4",
-    "com.typesafe.play" %% "play-json" % "2.9.2"
+    "com.typesafe.play" %% "play-json" % "2.9.2",
+    "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0"
 )
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
