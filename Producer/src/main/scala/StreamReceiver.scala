@@ -33,7 +33,9 @@ object StreamReceiver extends App {
         send
       )
 
-    Source.combine(tweetsSource1, tweetsSource2)(Merge(_)).runForeach(e => tweetsParser!e)
+    Source.combine(tweetsSource1, tweetsSource2)(Merge(_)).runForeach(e => {
+      tweetsParser!e
+    })
  }
 
 //Start docker tweets:
