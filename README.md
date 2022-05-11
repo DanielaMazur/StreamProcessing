@@ -1,8 +1,8 @@
-# Lab 1: Stream Processing with Actors
+# Message Broker
 
 ## [Resources](./docs/links.md)
 
-# System diagrams
+## System diagrams
 
 The built system is composed of 3 main components: Producer, Consumers and MessageBroker.
 
