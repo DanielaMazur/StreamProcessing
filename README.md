@@ -6,4 +6,4 @@
 
 ![System Components](./assets/SystemComponents.png)
 ![Message Broker Supervision Tree](./assets/MessageBrokerSupervisionTree.png)
-![Message Broker Sequence Diagram](./assets/MessageBrokerSequenceDiagram.png)
+![Message Broker Message Flow](./assets/MessageBrokerMessageFlow.png)
