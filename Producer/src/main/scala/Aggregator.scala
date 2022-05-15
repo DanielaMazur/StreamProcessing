@@ -15,6 +15,7 @@ class Aggregator extends Actor with ActorLogging {
   var pendingTweets = Map[String, JsObject]()
 
   val DBManager = context.actorOf(Props[DBManager], "DBManager")
+  val tweetMessageSerializer = context.actorOf(Props[TweetMessageSerializer], "TweetMessageSerializer")
 
   override def receive: Receive = {
     case tweet: JsObject => {
@@ -23,7 +24,11 @@ class Aggregator extends Actor with ActorLogging {
       pendingTweet match {
         case Some(x) => {
           pendingTweets = pendingTweets.-(tweetId)
-          DBManager ! tweet ++ x
+          val aggregatedTweet = tweet ++ x
+          val topic = (x \  "message" \ "tweet" \ "lang").as[String]
+          val tweetMessage = new TweetMessage(tweetId, topic);
+          DBManager ! aggregatedTweet
+          tweetMessageSerializer ! tweetMessage
         }
         case None => pendingTweets += (tweetId -> tweet)
       }

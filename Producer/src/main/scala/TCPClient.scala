@@ -1,4 +1,4 @@
-package messagebroker
+package streamprocessing
 
 import akka.actor.{ Actor, ActorRef, Props }
 import akka.io.{ IO, Tcp }
@@ -6,11 +6,10 @@ import akka.util.ByteString
 import java.net.InetSocketAddress
 
 object TCPClient {
-  def props(remote: InetSocketAddress, replies: ActorRef) =
-    Props(classOf[TCPClient], remote, replies)
+  def props(remote: InetSocketAddress) = Props(classOf[TCPClient], remote)
 }
 
-class TCPClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
+class TCPClient(remote: InetSocketAddress) extends Actor {
 
   import Tcp._
   import context.system
@@ -19,11 +18,11 @@ class TCPClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
 
   def receive = {
     case CommandFailed(_: Connect) =>
-      listener ! "connect failed"
+      // listener ! "connect failed"
       context.stop(self)
 
     case c @ Connected(remote, local) =>
-      listener ! c
+      // listener ! c
       val connection = sender()
       connection ! Register(self)
       context.become {
@@ -31,13 +30,14 @@ class TCPClient(remote: InetSocketAddress, listener: ActorRef) extends Actor {
           connection ! Write(data)
         case CommandFailed(w: Write) =>
           // O/S buffer was full
-          listener ! "write failed"
-        case Received(data) =>
-          listener ! data
+          // listener ! "write failed"
+        case Received(data) => {
+          // listener ! data
+        }
         case "close" =>
           connection ! Close
         case _: ConnectionClosed =>
-          listener ! "connection closed"
+          // listener ! "connection closed"
           context.stop(self)
       }
   }
