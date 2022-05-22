@@ -5,18 +5,44 @@ import scala.collection.mutable.Queue
 import akka.actor.ActorRef
 import akka.io.Tcp
 import akka.util.ByteString
+import akka.actor.Props
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+import akka.actor.Cancellable
 
-class TopicQueue extends Actor {
+object TopicQueue {
+  def props(subscriber: ActorRef) = Props(classOf[TopicQueue], subscriber)
+}
+
+class TopicQueue(subscriber: ActorRef) extends Actor {
   var queue = Queue[TweetMessage]()
-  var subscribers = List[ActorRef]()
+  var numberOfRetries = 0
+  var scheduledRetry: Cancellable = null
 
   override def receive: Receive = {
     case message: TweetMessage => {
       queue.enqueue(message)
-      subscribers.foreach(s => s ! Tcp.Write(ByteString(s"${message.TweetId},${message.Topic}")))
+      context.parent ! self
     }
-    case sender: ActorRef => {
-      subscribers = subscribers :+ sender
+    case "ack" => {
+      queue.dequeue()
+      scheduledRetry.cancel()
+      if(queue.length > 0){
+        context.parent ! self
+      }
+    }
+    case "send" => {
+      val message = queue.front
+      subscriber ! Tcp.Write(ByteString(s"${message.TweetId},${message.Topic}\n"))
+      scheduledRetry = context.system.scheduler.scheduleOnce(1.minute, self, "retry")
+    }
+    case "retry" => {
+      if(numberOfRetries == 3){
+        context.parent ! "shutdown"
+      }else {
+        self ! "send"
+        numberOfRetries += 1
+      }
     }
   }
 }

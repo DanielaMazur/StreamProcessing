@@ -10,13 +10,12 @@ class ConsumerConnectionHandler extends Actor {
   import Tcp._
  
   case class TopicsList(topics: Iterable[String])
-  val topicsManager = context.actorSelection("/user/Supervisor/TopicsManager")
-  var s: ActorRef = sender()
+  val consumerQueuesManager = context.actorSelection("/user/Supervisor/ConsumerQueuesManager")
 
   override def receive: Receive = {
     case Received(data) => {
       val lang = new String(data.toArray, "UTF-8").trim()
-      topicsManager ! (lang, sender())
+      consumerQueuesManager ! (lang, sender())
     } 
     case PeerClosed     => context.stop(self)
   }
