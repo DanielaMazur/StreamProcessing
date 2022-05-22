@@ -9,7 +9,6 @@ class ConsumerConnectionHandler extends Actor {
 
   import Tcp._
  
-  case class TopicsList(topics: Iterable[String])
   val consumerQueuesManager = context.actorSelection("/user/Supervisor/ConsumerQueuesManager")
 
   override def receive: Receive = {

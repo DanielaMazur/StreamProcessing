@@ -25,6 +25,7 @@ class TopicsManager(subscriber: ActorRef) extends Actor {
     case "ack" => {
       if(topicQueueWaitingAck != null){
         topicQueueWaitingAck ! "ack"
+        topicQueueWaitingAck = null
       }
     }
     case "shutdown" => {
