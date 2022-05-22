@@ -22,14 +22,10 @@ class TopicQueue(subscriber: ActorRef) extends Actor {
   override def receive: Receive = {
     case message: TweetMessage => {
       queue.enqueue(message)
-      context.parent ! self
     }
     case "ack" => {
       queue.dequeue()
       scheduledRetry.cancel()
-      if(queue.length > 0){
-        context.parent ! self
-      }
     }
     case "send" => {
       val message = queue.front

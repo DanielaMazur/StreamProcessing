@@ -7,25 +7,35 @@ import akka.util.ByteString
 import akka.io.Tcp
 import scala.collection.mutable
 import akka.actor.SupervisorStrategy
+import scala.collection.mutable.Queue
+import akka.actor.ActorLogging
 
 object TopicsManager {
   def props(subscriber: ActorRef) = Props(classOf[TopicsManager], subscriber)
 }
 
-class TopicsManager(subscriber: ActorRef) extends Actor {
+class TopicsManager(subscriber: ActorRef) extends Actor with ActorLogging {
   var topicQueues: Map[String, ActorRef] = Map()
-  var topicQueueWaitingAck: ActorRef = null;
+  var messagesBuffer = Queue[String]()
+  var isFirstMessage = true;
 
   override def receive: Receive = {
     case message: TweetMessage => {
       if(topicQueues.contains(message.Topic)){
         topicQueues(message.Topic) ! message
+        messagesBuffer.enqueue(message.Topic)
+        if(isFirstMessage){
+          isFirstMessage = false;
+          topicQueues(messagesBuffer.front) ! "send"
+        }
       }
     }
     case "ack" => {
-      if(topicQueueWaitingAck != null){
-        topicQueueWaitingAck ! "ack"
-        topicQueueWaitingAck = null
+      try {
+        topicQueues(messagesBuffer.dequeue()) ! "ack"
+        topicQueues(messagesBuffer.front) ! "send"
+      }catch{
+        case _: Throwable => log.info("MessagesBuffer queue was empty")
       }
     }
     case "shutdown" => {
@@ -38,11 +48,5 @@ class TopicsManager(subscriber: ActorRef) extends Actor {
         topicQueues += (lang -> newTopicQueue)
       }
     }
-    case (topicQueue: ActorRef) => {
-      if(topicQueueWaitingAck == null){
-        topicQueueWaitingAck = topicQueue
-        topicQueue ! "send"
-      }
-    } 
   }
 }
