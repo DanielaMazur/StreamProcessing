@@ -26,8 +26,9 @@ version := "1.0"
 // You can define other libraries as dependencies in your build like this:
 
 libraryDependencies ++= Seq(
-"org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1",
-"com.typesafe.akka" %% "akka-actor" % "2.6.19"
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1",
+    "com.typesafe.akka" %% "akka-actor" % "2.6.19",
+    "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0"
 )
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
