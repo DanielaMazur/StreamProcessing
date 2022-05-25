@@ -1,0 +1,53 @@
+version: "2"
+
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: "mongodb-composed"
+    ports:
+      - 27017:27017
+    volumes:
+      - ~/apps/mongo:/data/db
+      - ./mongo-db-rs-init.sh:/scripts/mongo-db-rs-init.sh
+    entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs"]
+
+  message-broker:
+    build:
+      context: ./MessageBroker/target/docker/stage
+      dockerfile: Dockerfile
+    container_name: "message-broker-composed"
+    environment:
+      PORT: 9200
+      MONGO_DB_HOST: mongodb://mongodb-composed:27017
+      MESSAGE_BROKER_HOST: message-broker-composed
+    ports:
+      - 9200:9200
+
+  producer:
+    build:
+      context: ./Producer/target/docker/stage
+      dockerfile: Dockerfile
+    container_name: "producer-composed"
+    environment:
+      PORT: 9200
+      MONGO_DB_HOST: mongodb://mongodb-composed:27017
+      MESSAGE_BROKER_HOST: message-broker-composed
+      TWEETS_STREAM_HOST: rtp-composed
+    ports:
+      - 8200:9200
+
+  consumer:
+    build:
+      context: ./Consumer/target/docker/stage
+      dockerfile: Dockerfile
+    container_name: "consumer-composed"
+    environment:
+      MESSAGE_BROKER_HOST: message-broker-composed
+    ports:
+      - 7200:9200
+
+  rtp:
+    image: alexburlacu/rtp-server:faf18x
+    container_name: "rtp-composed"
+    ports:
+      - 4000:4000

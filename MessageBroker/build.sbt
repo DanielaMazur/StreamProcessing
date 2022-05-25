@@ -28,7 +28,7 @@ version := "1.0"
 libraryDependencies ++= Seq(
     "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1",
     "com.typesafe.akka" %% "akka-actor" % "2.6.19",
-    "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0"
+    "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0",
 )
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
@@ -79,3 +79,8 @@ libraryDependencies ++= Seq(
 
 // To learn more about multi-project builds, head over to the official sbt
 // documentation at http://www.scala-sbt.org/documentation.html
+
+enablePlugins(JavaAppPackaging)
+enablePlugins(DockerPlugin)
+
+mainClass in Compile := Some("messagebroker.Main")

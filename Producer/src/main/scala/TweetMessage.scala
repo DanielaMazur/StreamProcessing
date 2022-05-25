@@ -1,3 +1,3 @@
 package streamprocessing
 
-class TweetMessage(val TweetId : String, val Topic : String) {}
+case class TweetMessage(val TweetId : String, val Topic : String) {}

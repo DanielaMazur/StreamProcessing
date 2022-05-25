@@ -2,7 +2,6 @@ package streamprocessing
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
@@ -17,13 +16,18 @@ import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Random
 import scala.util.Success
-  import akka.actor.ActorRef
+import akka.actor.ActorRef
+import com.typesafe.config.ConfigFactory
   
 class SentimentWorker extends Worker {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
-
+  
+  val config = ConfigFactory.load().getConfig("StreamProcessingConfig")
+  val tweetsStreamHost = config.getString("tweetsStreamHost");
+  val tweetsStreamPort = config.getInt("tweetsStreamPort");
+  
   val futureResponse = Http(context.system).singleRequest(HttpRequest(
-    uri =  Uri("http://localhost:4000/emotion_values")
+    uri =  Uri(s"http://${tweetsStreamHost}:${tweetsStreamPort}/emotion_values")
   ))
 
   val emotionValuesFuture = Await.ready(futureResponse, Duration.Inf).value.get

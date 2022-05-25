@@ -4,10 +4,13 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import java.net.InetSocketAddress
 import akka.util.ByteString
+import com.typesafe.config.ConfigFactory
 
 class Consumer extends Actor with ActorLogging {
-
-  val client = context.actorOf(TCPClient.props(new InetSocketAddress("localhost", 2222)))
+  val config = ConfigFactory.load().getConfig("ConsumerConfig")
+  val messageBrokerHost = config.getString("messageBrokerHost");
+  val messageBrokerPort = config.getInt("messageBrokerPort");
+  val client = context.actorOf(TCPClient.props(new InetSocketAddress(messageBrokerHost, messageBrokerPort)))
 
   override def receive: Receive = {
       case "connected" => {

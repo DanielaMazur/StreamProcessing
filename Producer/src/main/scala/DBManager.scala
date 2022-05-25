@@ -20,7 +20,9 @@ class DBManager extends Actor with ActorLogging {
   val batchSize: Int = ConfigFactory.load().getConfig("StreamProcessingConfig").getInt("akka.actor.deployment.dbBatchSize");
   var pendingTweets = ListBuffer[JsObject]()
 
-  val mongoClient = MongoClient()
+  val mongodbUrl = ConfigFactory.load().getConfig("StreamProcessingConfig").getString("mongodbHost");
+
+  val mongoClient: MongoClient = MongoClient(mongodbUrl)
   val database: MongoDatabase = mongoClient.getDatabase("TweetsDB")
 
   database.getCollection("Users").drop().subscribe((_)=>{});

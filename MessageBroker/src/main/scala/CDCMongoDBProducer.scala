@@ -9,13 +9,16 @@ import org.mongodb.scala.bson.collection.immutable.Document
 import akka.actor.ActorLogging
 import org.mongodb.scala.bson.codecs.Macros._
 import org.bson.codecs.configuration.CodecRegistries.{fromRegistries, fromProviders}
+import com.typesafe.config.ConfigFactory
 
 class CDCMongoDBProducer extends Actor with ActorLogging {
   val consumerQueuesManager = context.actorSelection("/user/Supervisor/ConsumerQueuesManager")
+  
+  val mongodbUrl = ConfigFactory.load().getConfig("MessageBrokerConfig").getString("mongodbHost");
 
   val codecRegistry = fromRegistries(fromProviders(classOf[TweetMessage]), MongoClient.DEFAULT_CODEC_REGISTRY)
 
-  val mongoClient = MongoClient()
+  val mongoClient: MongoClient = MongoClient(mongodbUrl)
   val database: MongoDatabase = mongoClient.getDatabase("TweetsDB").withCodecRegistry(codecRegistry)
 
   val tweetsCollection: MongoCollection[TweetMessage] = database.getCollection("Tweets")

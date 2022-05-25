@@ -10,7 +10,7 @@ import play.api.libs.json.Json
 
 import scala.util.parsing.json.JSON
 
-class TweetParser extends Actor with ActorLogging  {
+class TweetParser extends Actor with ActorLogging {
   val sentimentWorkersRouter = context.actorOf(RoundRobinPool(1).props(Props(new WorkersPool[SentimentWorker])), "SentimentRouterPool")
   val engagementWorkersRouter = context.actorOf(RoundRobinPool(1).props(Props(new WorkersPool[EngagementWorker])), "EngagementRouterPool")
   val aggregator = context.actorOf(Props[Aggregator], "TweetsAggregator")
@@ -29,8 +29,8 @@ class TweetParser extends Actor with ActorLogging  {
         }
         catch {
             case _: Throwable => {
-              sentimentWorkersRouter ! PanicMessage
-              engagementWorkersRouter ! PanicMessage
+              sentimentWorkersRouter ! new PanicMessage
+              engagementWorkersRouter ! new PanicMessage
             }
         }
     }

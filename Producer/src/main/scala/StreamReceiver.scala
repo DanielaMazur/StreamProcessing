@@ -16,27 +16,31 @@ import com.typesafe.config.ConfigFactory
 import scala.concurrent.Future
 
 object StreamReceiver extends App {
-    implicit val system = ActorSystem("StreamProcessing", ConfigFactory.load().getConfig("StreamProcessingConfig"))
+  implicit val system = ActorSystem("StreamProcessing", ConfigFactory.load().getConfig("StreamProcessingConfig"))
+  
+  val config = ConfigFactory.load().getConfig("StreamProcessingConfig")
+  val tweetsStreamHost = config.getString("tweetsStreamHost");
+  val tweetsStreamPort = config.getInt("tweetsStreamPort");
 
-    val tweetsParser = system.actorOf(Props[TweetParser], "TweetParser")
- 
-    val send: HttpRequest => Future[HttpResponse] = Http().singleRequest(_)
+  val tweetsParser = system.actorOf(Props[TweetParser], "TweetParser")
 
-    val tweetsSource1: Source[ServerSentEvent, NotUsed] =
-      EventSource(
-        uri = Uri("http://localhost:4000/tweets/1"),
-        send
-      )
-    val tweetsSource2: Source[ServerSentEvent, NotUsed] = 
-      EventSource(
-        uri = Uri("http://localhost:4000/tweets/2"),
-        send
-      )
+  val send: HttpRequest => Future[HttpResponse] = Http().singleRequest(_)
 
-    Source.combine(tweetsSource1, tweetsSource2)(Merge(_)).runForeach(e => {
-      tweetsParser!e
-    })
- }
+  val tweetsSource1: Source[ServerSentEvent, NotUsed] =
+    EventSource(
+      uri = Uri(s"http://${tweetsStreamHost}:${tweetsStreamPort}/tweets/1"),
+      send
+    )
+  val tweetsSource2: Source[ServerSentEvent, NotUsed] =   
+    EventSource(
+      uri = Uri(s"http://${tweetsStreamHost}:${tweetsStreamPort}/tweets/2"),
+      send
+    )
+
+  Source.combine(tweetsSource1, tweetsSource2)(Merge(_)).runForeach(e => {
+    tweetsParser!e
+  })
+}
 
 //Start docker tweets:
 //docker run --p 4000:4000 alexburlacu/rtp-server:faf18x

@@ -30,7 +30,7 @@ class TopicQueue(subscriber: ActorRef) extends Actor {
     case "send" => {
       val message = queue.front
       subscriber ! Tcp.Write(ByteString(s"${message.TweetId},${message.Topic}\n"))
-      scheduledRetry = context.system.scheduler.scheduleOnce(1.minute, self, "retry")
+      scheduledRetry = context.system.scheduler.scheduleOnce(100.milliseconds, self, "retry")
     }
     case "retry" => {
       if(numberOfRetries == 3){

@@ -33,8 +33,8 @@ class TCPClient(remote: InetSocketAddress) extends Actor with ActorLogging {
         case Received(data) => {
           log.info(new String(data.toArray, "UTF-8").trim())
           import scala.util.Random
-          val ackTimeInSeconds = Random.between(1, 20) 
-          context.system.scheduler.scheduleOnce(ackTimeInSeconds.seconds, self, ByteString.fromArray("ack".getBytes("UTF-8")))
+          val ackTimeInMs = Random.between(100, 300) 
+          context.system.scheduler.scheduleOnce(ackTimeInMs.milliseconds, self, ByteString.fromArray("ack".getBytes("UTF-8")))
         }
         case "close" => connection ! Close
         case _: ConnectionClosed => context.stop(self)
