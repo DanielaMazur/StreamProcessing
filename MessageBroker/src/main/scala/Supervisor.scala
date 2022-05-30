@@ -10,7 +10,6 @@ class Supervisor extends Actor {
   val messageDeserializer = context.actorOf(Props[MessageDeserializer], "MessageDeserializer")
   val consumerConnectionHandler = context.actorOf(Props[ConsumerConnectionHandler], "ConsumerConnectionHandler")
   val consumerQueuesManager = context.actorOf(Props[ConsumerQueuesManager], "ConsumerQueuesManager")
-  val CDCMongoDBProducer = context.actorOf(Props[CDCMongoDBProducer], "CDCMongoDBProducer");
 
   val config = ConfigFactory.load().getConfig("MessageBrokerConfig")
   val messageBrokerHost = config.getString("messageBrokerHost");

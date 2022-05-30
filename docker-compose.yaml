@@ -23,6 +23,19 @@ services:
     ports:
       - 9200:9200
 
+  tweets-processor:
+    build:
+      context: ./TweetsProcessor/target/docker/stage
+      dockerfile: Dockerfile
+    container_name: "tweets-processor-composed"
+    environment:
+      PORT: 9200
+      MONGO_DB_HOST: mongodb://mongodb-composed:27017
+      MESSAGE_BROKER_HOST: message-broker-composed
+      TWEETS_STREAM_HOST: rtp-composed
+    ports:
+      - 8200:9200
+
   producer:
     build:
       context: ./Producer/target/docker/stage
@@ -32,9 +45,8 @@ services:
       PORT: 9200
       MONGO_DB_HOST: mongodb://mongodb-composed:27017
       MESSAGE_BROKER_HOST: message-broker-composed
-      TWEETS_STREAM_HOST: rtp-composed
     ports:
-      - 8200:9200
+      - 7200:9200
 
   consumer:
     build:
@@ -44,7 +56,7 @@ services:
     environment:
       MESSAGE_BROKER_HOST: message-broker-composed
     ports:
-      - 7200:9200
+      - 6200:9200
 
   rtp:
     image: alexburlacu/rtp-server:faf18x

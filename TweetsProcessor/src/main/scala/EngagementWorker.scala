@@ -1,4 +1,4 @@
-package streamprocessing
+package tweetsprocessor
 
 import play.api.libs.json.JsObject
 import play.api.libs.json.JsValue

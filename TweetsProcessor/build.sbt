@@ -13,7 +13,7 @@ scalaVersion := "2.13.8"
 
 // It's possible to define many kinds of settings, such as:
 
-name := "Producer"
+name := "streamprocessing"
 organization := "ch.epfl.scala"
 version := "1.0"
 
@@ -29,8 +29,12 @@ libraryDependencies ++= Seq(
     // "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1",
     "com.typesafe.akka" %% "akka-actor" % "2.6.19",
     "com.typesafe.akka" %% "akka-http" % "10.2.9",
+    "com.typesafe.akka" %% "akka-stream" % "2.6.19",
+    "com.lightbend.akka" %% "akka-stream-alpakka-sse" % "3.0.4",
+    "com.typesafe.play" %% "play-json" % "2.9.2",
     "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0"
 )
+
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
 // we're adding the scala-parser-combinators dependency to the set of dependencies
 // that sbt will go and fetch when it starts up.
@@ -79,7 +83,8 @@ libraryDependencies ++= Seq(
 
 // To learn more about multi-project builds, head over to the official sbt
 // documentation at http://www.scala-sbt.org/documentation.html
+
 enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 
-mainClass in Compile := Some("producer.Main")
+mainClass in Compile := Some("tweetsprocessor.StreamReceiver")

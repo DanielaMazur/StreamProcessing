@@ -1,4 +1,4 @@
-package streamprocessing
+package tweetsprocessor
 
 import akka.actor.Actor
 import akka.actor.ActorLogging

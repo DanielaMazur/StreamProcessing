@@ -1,3 +1,0 @@
-package streamprocessing
-
-class PanicMessage {}

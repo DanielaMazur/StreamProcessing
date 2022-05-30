@@ -1,4 +1,4 @@
-package messagebroker
+package producer
 
 import akka.actor.Actor
 import org.mongodb.scala.MongoClient
@@ -12,9 +12,9 @@ import org.bson.codecs.configuration.CodecRegistries.{fromRegistries, fromProvid
 import com.typesafe.config.ConfigFactory
 
 class CDCMongoDBProducer extends Actor with ActorLogging {
-  val consumerQueuesManager = context.actorSelection("/user/Supervisor/ConsumerQueuesManager")
+  val tweetMessageSerializer = context.actorSelection("/user/TweetMessageSerializer")
   
-  val mongodbUrl = ConfigFactory.load().getConfig("MessageBrokerConfig").getString("mongodbHost");
+  val mongodbUrl = ConfigFactory.load().getConfig("ProducerConfig").getString("mongodbHost");
 
   val codecRegistry = fromRegistries(fromProviders(classOf[TweetMessage]), MongoClient.DEFAULT_CODEC_REGISTRY)
 
@@ -23,7 +23,7 @@ class CDCMongoDBProducer extends Actor with ActorLogging {
 
   val tweetsCollection: MongoCollection[TweetMessage] = database.getCollection("Tweets")
   
-  val observer = DBObserver(consumerQueuesManager)
+  val observer = DBObserver(tweetMessageSerializer)
   tweetsCollection.watch().subscribe(observer)
   observer.await()
 

@@ -1,4 +1,4 @@
-package streamprocessing
+package tweetsprocessor
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpRequest

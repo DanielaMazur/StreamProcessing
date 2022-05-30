@@ -1,4 +1,4 @@
-package producer
+package tweetsprocessor
 
 import akka.actor.Actor
 import akka.actor.ActorLogging
@@ -7,7 +7,10 @@ import java.net.InetSocketAddress
 import com.typesafe.config.ConfigFactory
 
 class TweetMessageSerializer extends Actor with ActorLogging {
-  val client = context.actorSelection("/user/TCPClient")
+  val config = ConfigFactory.load().getConfig("StreamProcessingConfig")
+  val messageBrokerHost = config.getString("messageBrokerHost");
+  val messageBrokerPort = config.getInt("messageBrokerPort");
+  val client = context.actorOf(TCPClient.props(new InetSocketAddress(messageBrokerHost, messageBrokerPort)), "TCPClient")
 
   override def receive = {
     case tweetMessage: TweetMessage => {

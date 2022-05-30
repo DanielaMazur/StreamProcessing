@@ -1,4 +1,4 @@
-package messagebroker
+package producer
 
 import java.util.concurrent.CountDownLatch
 import org.mongodb.scala.Observer
@@ -12,6 +12,7 @@ case class DBObserver(replyTo: ActorSelection) extends Observer[ChangeStreamDocu
     override def onSubscribe(subscription: Subscription): Unit = subscription.request(Long.MaxValue) // Request data
 
     override def onNext(changeDocument: ChangeStreamDocument[TweetMessage]): Unit = {
+      println(changeDocument.getFullDocument())
       replyTo ! changeDocument.getFullDocument()
     }
 

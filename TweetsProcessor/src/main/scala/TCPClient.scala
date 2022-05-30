@@ -1,4 +1,4 @@
-package producer
+package tweetsprocessor
 
 import akka.actor.{ Actor, ActorRef, Props }
 import akka.io.{ IO, Tcp }

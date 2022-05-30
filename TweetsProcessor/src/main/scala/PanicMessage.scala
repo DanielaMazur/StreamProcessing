@@ -1,0 +1,3 @@
+package tweetsprocessor
+
+class PanicMessage {}
